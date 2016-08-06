@@ -1,124 +1,172 @@
-
-
-// We keep a global dictionary of loaded sprite-sheets,
-// which are each an instance of our SpriteSheetClass
-// below.
 //
-// This dictionary is indexed by the URL path that the
-// atlas is located at. For example, calling:
+// Helper file with various definitions for our Class object.
+// You don't have to modify anything in here.
 //
-// gSpriteSheets['grits_effects.png'] 
-//
-// would return the SpriteSheetClass object associated
-// to that URL, assuming that it exists.
-var gSpriteSheets = {};
-
-//-----------------------------------------
-SpriteSheetClass = Class.extend({
-
-    // We store in the SpriteSheetClass:
-    //
-    // The Image object that we created for our
-    // atlas.
-	img: null,
-
-    // The URL path that we grabbed our atlas
-    // from.
-	url: "",
-
-    // An array of all the sprites in our atlas.
-	sprites: new Array(),
-
-	//-----------------------------------------
-	init: function () {},
-
-	//-----------------------------------------
-    // Load the atlas at the path 'imgName' into
-    // memory. This is similar to how we've
-    // loaded images in previous units.
-	load: function (imgName) {
-		// Store the URL of the spritesheet we want.
-        this.url = imgName;
-        
-        // Create a new image whose source is at 'imgName'.
-		var img = new Image();
-		img.src = imgName;
-
-        // Store the Image object in the img parameter.
-		this.img = img;
-
-        // Store this SpriteSheetClass in our global
-        // dictionary gSpriteSheets defined above.
-		gSpriteSheets[imgName] = this;
-	},
-
-	//-----------------------------------------
-	// Define a sprite for this atlas
-	defSprite: function (name, x, y, w, h, cx, cy) {
-        // We create a new object with:
-        //
-        // The name of the sprite as a string
-        //
-        // The x and y coordinates of the sprite
-        // in the atlas.
-        //
-        // The width and height of the sprite in
-        // the atlas.
-        //
-        // The x and y coordinates of the center
-        // of the sprite in the atlas. This is
-        // so we don't have to do the calculations
-        // each time we need this. This might seem
-        // minimal, but it adds up!
-		var spt = {
-			"id": name,
-			"x": x,
-			"y": y,
-			"w": w,
-			"h": h,
-			"cx": cx === null ? 0 : cx,
-			"cy": cy === null ? 0 : cy
-		};
-
-        // We push this new object into
-        // our array of sprite objects,
-        // at the end of the array.
-		this.sprites.push(spt);
-	},
-
-	//-----------------------------------------
-    // Parse the JSON file passed in as 'atlasJSON'
-    // that is associated to this atlas.
-	parseAtlasDefinition: function (atlasJSON) {
-        // Parse the input 'atlasJSON' using the
-        // JSON.parse method and store it in a
-        // variable.
-        //
-		// YOUR CODE HERE
 
 
-        // For each sprite in the parsed JSON,
-        // 'chaingun.png', chaingun_impact.png',
-        // etc.:
-        //
-        // 1) Calculate the center (x,y) offsets
-        //    from the 'width' and 'height'
-        //    values listed in the JSON.
-        //    Note that these are an offset
-        //    FROM the 'width' and 'height',
-        //    so they will be negative!
-        //
-        // 2) Pass the sprite name, the (x,y)
-        //    coordinates, the width and height,
-        //    and the center (x,y) offsets
-        //    you just calculated to the above
-        //    'defSprite' method of our
-        //    'SpriteSheetClass'.
-        //
-        // YOUR CODE HERE
-
-        
+Array.prototype.erase = function (item) {
+	for (var i = this.length; i--; i) {
+		if (this[i] === item) this.splice(i, 1);
 	}
 
-});
+	return this;
+};
+
+Function.prototype.bind = function (bind) {
+	var self = this;
+	return function () {
+		var args = Array.prototype.slice.call(arguments);
+		return self.apply(bind || null, args);
+	};
+};
+
+merge = function (original, extended) {
+	for (var key in extended) {
+		var ext = extended[key];
+		if (typeof (ext) != 'object' || ext instanceof Class) {
+			original[key] = ext;
+		} else {
+			if (!original[key] || typeof (original[key]) != 'object') {
+				original[key] = {};
+			}
+			merge(original[key], ext);
+		}
+	}
+	return original;
+};
+
+function copy(object) {
+	if (!object || typeof (object) != 'object' || object instanceof Class) {
+		return object;
+	} else if (object instanceof Array) {
+		var c = [];
+		for (var i = 0, l = object.length; i < l; i++) {
+			c[i] = copy(object[i]);
+		}
+		return c;
+	} else {
+		var c = {};
+		for (var i in object) {
+			c[i] = copy(object[i]);
+		}
+		return c;
+	}
+}
+
+function ksort(obj) {
+	if (!obj || typeof (obj) != 'object') {
+		return [];
+	}
+
+	var keys = [],
+		values = [];
+	for (var i in obj) {
+		keys.push(i);
+	}
+
+	keys.sort();
+	for (var i = 0; i < keys.length; i++) {
+		values.push(obj[keys[i]]);
+	}
+
+	return values;
+}
+
+// -----------------------------------------------------------------------------
+// Class object based on John Resigs code; inspired by base2 and Prototype
+// http://ejohn.org/blog/simple-javascript-inheritance/
+(function () {
+	var initializing = false,
+		fnTest = /xyz/.test(function () {
+			xyz;
+		}) ? /\bparent\b/ : /.*/;
+
+	this.Class = function () {};
+	var inject = function (prop) {
+		var proto = this.prototype;
+		var parent = {};
+		for (var name in prop) {
+			if (typeof (prop[name]) == "function" && typeof (proto[name]) == "function" && fnTest.test(prop[name])) {
+				parent[name] = proto[name]; // save original function
+				proto[name] = (function (name, fn) {
+					return function () {
+						var tmp = this.parent;
+						this.parent = parent[name];
+						var ret = fn.apply(this, arguments);
+						this.parent = tmp;
+						return ret;
+					};
+				})(name, prop[name]);
+			} else {
+				proto[name] = prop[name];
+			}
+		}
+	};
+
+	this.Class.extend = function (prop) {
+		var parent = this.prototype;
+
+		initializing = true;
+		var prototype = new this();
+		initializing = false;
+
+		for (var name in prop) {
+			if (typeof (prop[name]) == "function" && typeof (parent[name]) == "function" && fnTest.test(prop[name])) {
+				prototype[name] = (function (name, fn) {
+					return function () {
+						var tmp = this.parent;
+						this.parent = parent[name];
+						var ret = fn.apply(this, arguments);
+						this.parent = tmp;
+						return ret;
+					};
+				})(name, prop[name]);
+			} else {
+				prototype[name] = prop[name];
+			}
+		}
+
+		function Class() {
+			if (!initializing) {
+
+				// If this class has a staticInstantiate method, invoke it
+				// and check if we got something back. If not, the normal
+				// constructor (init) is called.
+				if (this.staticInstantiate) {
+					var obj = this.staticInstantiate.apply(this, arguments);
+					if (obj) {
+						return obj;
+					}
+				}
+
+				for (var p in this) {
+					if (typeof (this[p]) == 'object') {
+						this[p] = copy(this[p]); // deep copy!
+					}
+				}
+
+				if (this.init) {
+					this.init.apply(this, arguments);
+				}
+			}
+
+			return this;
+		}
+
+		Class.prototype = prototype;
+		Class.constructor = Class;
+		Class.extend = arguments.callee;
+		Class.inject = inject;
+
+		return Class;
+	};
+
+})();
+
+newGuid_short = function () {
+	var S4 = function () {
+		return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+	};
+	return (S4()).toString();
+};
 
