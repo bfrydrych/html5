@@ -38,33 +38,47 @@ class GameObject {
 class Monster extends GameObject {
 	constructor() {
 		super(monsterImg);
+		
+		this.width = 128;
+		this.height = 128;
 	}
 }
 
 var frames = 0;
+
+var monsters = [];
 var monster = new Monster();
-monster.direction = true;
-function update() {
-	CTX.clearRect(0, 0, 2000, 2000);
-	frames++;
-	
-	
-	if (monster.direction) {
-		monster.y++;
-	} else if(!monster.direction) {
-		monster.y--;
-	} 
-	
-	if (monster.y > 30 ) {
-		monster.direction = false;
-	}
-	if (monster.y == 0) {
-		monster.direction = true;
+monsters.push(monster);
+
+for (var i = 1; i < 40; i++) {
+	if (i % 10 === 0 || i % 20 === 0 || i % 30 === 0) {
+		var monster = new Monster();
+		monster.y  = monsters[monsters.length - 1].y + monster.height;
+		monsters.push(monster);
+	} else {
+		var monster = new Monster();
+		monster.x  = monsters[monsters.length - 1].x + monster.width;
+		monster.y = monsters[monsters.length - 1].y;
+		monsters.push(monster);
 	}
 }
 
+monster.direction = true;
+
+
+
+function update() {
+	CTX.clearRect(0, 0, 2000, 2000);
+	
+	monsters.forEach(function(monster) {
+		monster.y = monster.y + 1;
+	});
+}
+
 function draw() {
-	monster.draw();
+	monsters.forEach(function(monster) {
+		monster.draw();
+	});
 }
 
 
