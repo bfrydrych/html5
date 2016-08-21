@@ -1,5 +1,7 @@
 var CANVAS = "game";
 var c=document.getElementById(CANVAS);
+var CANVAS_WIDTH = c.width;
+var CANVAS_HEIGHT = c.height;
 var CTX=c.getContext("2d");
 var RES_PREFIX = 'file:///D:/devel/projects/html5/spaceInvaders/';
 var MAX_RETRIES = 1000000000;
@@ -22,6 +24,7 @@ class ImageLoader {
 
 var imgLoader = new ImageLoader();
 var monsterImg = imgLoader.loadImage("monster.png");
+var shipImg = imgLoader.loadImage("ship.jpg");
 
 class GameObject {
 	constructor(img) {
@@ -41,10 +44,19 @@ class Monster extends GameObject {
 		
 		this.width = 128;
 		this.height = 128;
+		this.speed = 1;
 	}
 }
 
-var frames = 0;
+class Ship extends GameObject {
+	constructor() {
+		super(shipImg);
+		
+		this.width = 256;
+		this.height = 256;
+		this.speed = 10;
+	}
+}
 
 var monsters = [];
 var monster = new Monster();
@@ -63,15 +75,31 @@ for (var i = 1; i < 40; i++) {
 	}
 }
 
-monster.direction = true;
+var ship = new Ship();
+ship.y = CANVAS_HEIGHT - ship.height;
 
+document.addEventListener("keydown",keyDownHandler, false);	
 
+function keyDownHandler(event)
+{
+	var keyPressed = String.fromCharCode(event.keyCode);
+
+	if (keyPressed == "A")
+	{		
+		ship.x = ship.x - ship.speed;
+	}
+	else if (keyPressed == "D")
+	{	
+		facing = "E";
+		ship.x = ship.x + ship.speed;		
+	}
+}
 
 function update() {
 	CTX.clearRect(0, 0, 2000, 2000);
 	
 	monsters.forEach(function(monster) {
-		monster.y = monster.y + 1;
+		monster.y = monster.y + monster.speed;
 	});
 }
 
@@ -79,6 +107,8 @@ function draw() {
 	monsters.forEach(function(monster) {
 		monster.draw();
 	});
+	
+	ship.draw();
 }
 
 
@@ -87,7 +117,7 @@ var preloader = setInterval(preloading, TIME_PER_FRAME);
 
 function preloading()
 {	
-	if (monsterImg.ready)
+	if (monsterImg.ready && shipImg.ready)
 	{
 		clearInterval(preloader);
 		
