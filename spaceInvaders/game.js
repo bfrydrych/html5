@@ -25,6 +25,7 @@ class ImageLoader {
 var imgLoader = new ImageLoader();
 var monsterImg = imgLoader.loadImage("monster.png");
 var shipImg = imgLoader.loadImage("ship.jpg");
+var shipMissileImg = imgLoader.loadImage("shipMissile.png");
 
 class GameObject {
 	constructor(img) {
@@ -54,7 +55,17 @@ class Ship extends GameObject {
 		
 		this.width = 256;
 		this.height = 256;
-		this.speed = 10;
+		this.speed = 20;
+	}
+}
+
+class ShipMissile extends GameObject {
+	constructor() {
+		super(shipMissileImg);
+		
+		this.width = 87;
+		this.height = 84;
+		this.speed = 30;
 	}
 }
 
@@ -78,6 +89,8 @@ for (var i = 1; i < 40; i++) {
 var ship = new Ship();
 ship.y = CANVAS_HEIGHT - ship.height;
 
+var shipMissiles = [];
+
 document.addEventListener("keydown",keyDownHandler, false);	
 
 function keyDownHandler(event)
@@ -90,8 +103,14 @@ function keyDownHandler(event)
 	}
 	else if (keyPressed == "D")
 	{	
-		facing = "E";
 		ship.x = ship.x + ship.speed;		
+	}
+	else if (keyPressed == "W")
+	{
+		var shipMissile = new ShipMissile();
+		shipMissile.y = ship.y - shipMissile.height + 45 ;
+		shipMissile.x = (ship.x + ship.width / 2) - (shipMissile.width / 2)
+		shipMissiles.push(shipMissile);
 	}
 }
 
@@ -101,6 +120,16 @@ function update() {
 	monsters.forEach(function(monster) {
 		monster.y = monster.y + monster.speed;
 	});
+	
+	for(var i = shipMissiles.length - 1; i >= 0; i--) {
+	    if(shipMissiles[i].y < 0) {
+	    	shipMissiles.splice(i, 1);
+	    }
+	}
+	
+	shipMissiles.forEach(function(shipMissile) {
+		shipMissile.y = shipMissile.y - shipMissile.speed;
+	});
 }
 
 function draw() {
@@ -109,6 +138,10 @@ function draw() {
 	});
 	
 	ship.draw();
+	
+	shipMissiles.forEach(function(shipMissile) {
+		shipMissile.draw();
+	});
 }
 
 
@@ -117,7 +150,7 @@ var preloader = setInterval(preloading, TIME_PER_FRAME);
 
 function preloading()
 {	
-	if (monsterImg.ready && shipImg.ready)
+	if (monsterImg.ready && shipImg.ready && shipMissileImg)
 	{
 		clearInterval(preloader);
 		
