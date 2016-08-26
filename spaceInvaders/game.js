@@ -6,6 +6,8 @@ var CTX=c.getContext("2d");
 var RES_PREFIX = 'file:///D:/devel/projects/html5/spaceInvaders/';
 var MAX_RETRIES = 1000000000;
 var TIME_PER_FRAME = 1000 / 30;
+var gameloop = 0;
+var GAME_OVER = false;
 
 class ImageLoader {
 	constructor() {
@@ -117,19 +119,62 @@ function keyDownHandler(event)
 function update() {
 	CTX.clearRect(0, 0, 2000, 2000);
 	
+	// move monsters
 	monsters.forEach(function(monster) {
 		monster.y = monster.y + monster.speed;
 	});
 	
+	// remove all missiles being out of board
 	for(var i = shipMissiles.length - 1; i >= 0; i--) {
 	    if(shipMissiles[i].y < 0) {
 	    	shipMissiles.splice(i, 1);
 	    }
 	}
 	
+	// move missiles
 	shipMissiles.forEach(function(shipMissile) {
 		shipMissile.y = shipMissile.y - shipMissile.speed;
 	});
+	
+	
+	// collision detection
+	shipMissiles.forEach(function(shipMissile) {
+		monsters.forEach(function(monster) {
+			if (shipMissile.x < monster.x + monster.width &&
+					shipMissile.x + shipMissile.width > monster.x &&
+					shipMissile.y < monster.y + monster.height &&
+					shipMissile.height + shipMissile.y > monster.y) {
+					    monster.hit = true;
+					    shipMissile.hit = true;
+					}
+		});
+	});
+	
+	// remove all monsters being hit
+	for(var i = monsters.length - 1; i >= 0; i--) {
+	    if(monsters[i].hit) {
+	    	monsters.splice(i, 1);
+	    }
+	}
+	
+	// remove all missiles hit the target
+	for(var i = shipMissiles.length - 1; i >= 0; i--) {
+	    if(shipMissiles[i].hit) {
+	    	shipMissiles.splice(i, 1);
+	    }
+	}
+	
+	// detect monster crossing border
+	monsters.forEach(function(monster) {
+		if (monster.y + monster.width >= ship.y) {
+				    GAME_OVER = true;
+			}
+	});
+	
+	if (GAME_OVER) {
+		clearInterval(gameloop);
+		alert("Mikolaj przegrales ty kupo. HAHAHAHAHAHA!!!!!!!!!");
+	}
 }
 
 function draw() {
