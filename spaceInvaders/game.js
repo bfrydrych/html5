@@ -21,22 +21,38 @@ class ImageLoader {
 			this.img.src = RES_PREFIX + name;
 			return this.img;
 		}
+		
+		this.loadScaledImage = function(name, width, height) {
+			this.img = new Image();
+			this.img.width = width;
+			this.img.height = height;
+			this.img.ready = false;
+			this.img.onload  = function() {
+				this.ready = true;
+				this.width = width;
+				this.height = height;
+			};
+			this.img.src = RES_PREFIX + name;
+			return this.img;
+		}
 	}
 }
 
 var imgLoader = new ImageLoader();
-var monsterImg = imgLoader.loadImage("monster.png");
-var shipImg = imgLoader.loadImage("ship.jpg");
-var shipMissileImg = imgLoader.loadImage("shipMissile.png");
+var monsterImg = imgLoader.loadScaledImage("monster.png");
+var shipImg = imgLoader.loadScaledImage("ship.jpg");
+var shipMissileImg = imgLoader.loadScaledImage("shipMissile.png");
 
 class GameObject {
 	constructor(img) {
 		this.view = img;
 		this.x = 0;
 		this.y = 0;
+		this.width = 0;
+		this.height = 0;
 		
 		this.draw = function() {
-			CTX.drawImage(this.view, this.x, this.y);
+			CTX.drawImage(this.view, this.x, this.y, this.width, this.height);
 		}
 	}
 }
@@ -45,8 +61,8 @@ class Monster extends GameObject {
 	constructor() {
 		super(monsterImg);
 		
-		this.width = 128;
-		this.height = 128;
+		this.width = 92;
+		this.height = 92;
 		this.speed = 1;
 	}
 }
@@ -55,8 +71,8 @@ class Ship extends GameObject {
 	constructor() {
 		super(shipImg);
 		
-		this.width = 256;
-		this.height = 256;
+		this.width = 92;
+		this.height = 92;
 		this.speed = 20;
 	}
 }
@@ -65,8 +81,8 @@ class ShipMissile extends GameObject {
 	constructor() {
 		super(shipMissileImg);
 		
-		this.width = 87;
-		this.height = 84;
+		this.width = 32;
+		this.height = 32;
 		this.speed = 30;
 	}
 }
@@ -139,15 +155,18 @@ function update() {
 	
 	// collision detection
 	shipMissiles.forEach(function(shipMissile) {
-		monsters.forEach(function(monster) {
+		for(var i = monsters.length - 1; i >= 0; i--) {
+			var monster = monsters[i];
+		    
 			if (shipMissile.x < monster.x + monster.width &&
 					shipMissile.x + shipMissile.width > monster.x &&
 					shipMissile.y < monster.y + monster.height &&
 					shipMissile.height + shipMissile.y > monster.y) {
 					    monster.hit = true;
 					    shipMissile.hit = true;
+					    break;
 					}
-		});
+		}
 	});
 	
 	// remove all monsters being hit
@@ -173,7 +192,7 @@ function update() {
 	
 	if (GAME_OVER) {
 		clearInterval(gameloop);
-		alert("Mikolaj przegrales ty kupo. HAHAHAHAHAHA!!!!!!!!!");
+		alert("Przegrales. HAHAHAHAHAHA!!!!!!!!!");
 	}
 }
 
