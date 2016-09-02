@@ -9,6 +9,17 @@ var TIME_PER_FRAME = 1000 / 30;
 var gameloop = 0;
 var GAME_OVER = false;
 
+function getRandomInt(min, max) {
+	return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function collision(a, b) {
+	return (a.x < b.x + b.width &&
+			a.x + a.width > b.x &&
+			a.y < b.y + b.height &&
+			a.height + a.y > b.y);
+}
+
 class ImageLoader {
 	constructor() {
 		this.img = null;
@@ -42,6 +53,7 @@ var imgLoader = new ImageLoader();
 var monsterImg = imgLoader.loadScaledImage("monster.png");
 var shipImg = imgLoader.loadScaledImage("ship.jpg");
 var shipMissileImg = imgLoader.loadScaledImage("shipMissile.png");
+var monsterMissileImg = imgLoader.loadScaledImage("monsterMissile.png");
 
 class GameObject {
 	constructor(img) {
@@ -87,6 +99,36 @@ class ShipMissile extends GameObject {
 	}
 }
 
+class MonsterMissile extends GameObject {
+	constructor() {
+		super(monsterMissileImg);
+		
+		this.width = 32;
+		this.height = 32;
+		this.speed = 15;
+	}
+}
+
+class TimeIntervalMeasurer {
+	constructor() {
+		this.interval = 2000;
+		this.lastElapsed = new Date().getTime();
+		
+		this.elapsed = function() {
+			var currentTime = new Date().getTime();
+			
+			if((currentTime - this.lastElapsed) >= this.interval) {
+				this.lastElapsed = currentTime;
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}
+}
+
+var monsterShotIntervalMeasurer = new TimeIntervalMeasurer();
+
 var monsters = [];
 var monster = new Monster();
 monsters.push(monster);
@@ -108,6 +150,7 @@ var ship = new Ship();
 ship.y = CANVAS_HEIGHT - ship.height;
 
 var shipMissiles = [];
+var monsterMissiles = [];
 
 document.addEventListener("keydown",keyDownHandler, false);	
 
@@ -132,18 +175,36 @@ function keyDownHandler(event)
 	}
 }
 
+
+
 function update() {
 	CTX.clearRect(0, 0, 2000, 2000);
+	
+	// monster shot
+	if (monsterShotIntervalMeasurer.elapsed()) {
+		var monster = monsters[getRandomInt(0, monsters.length -1)];
+		var monserMissile = new MonsterMissile();
+		monserMissile.y = monster.y - monserMissile.height + 45 ;
+		monserMissile.x = (monster.x + monster.width / 2) - (monserMissile.width / 2)
+		monsterMissiles.push(monserMissile);
+	}
 	
 	// move monsters
 	monsters.forEach(function(monster) {
 		monster.y = monster.y + monster.speed;
 	});
 	
-	// remove all missiles being out of board
+	// remove all ship missiles being out of board
 	for(var i = shipMissiles.length - 1; i >= 0; i--) {
 	    if(shipMissiles[i].y < 0) {
 	    	shipMissiles.splice(i, 1);
+	    }
+	}
+	
+	// remove all monsters missiles being out of board
+	for(var i = monsterMissiles.length - 1; i >= 0; i--) {
+	    if(monsterMissiles[i].y > CANVAS_HEIGHT) {
+	    	monsterMissiles.splice(i, 1);
 	    }
 	}
 	
@@ -152,22 +213,36 @@ function update() {
 		shipMissile.y = shipMissile.y - shipMissile.speed;
 	});
 	
+	monsterMissiles.forEach(function(monsterMissile) {
+		monsterMissile.y = monsterMissile.y + monsterMissile.speed;
+	});
 	
-	// collision detection
+	
+	// monster collide with missile
 	shipMissiles.forEach(function(shipMissile) {
 		for(var i = monsters.length - 1; i >= 0; i--) {
 			var monster = monsters[i];
 		    
-			if (shipMissile.x < monster.x + monster.width &&
-					shipMissile.x + shipMissile.width > monster.x &&
-					shipMissile.y < monster.y + monster.height &&
-					shipMissile.height + shipMissile.y > monster.y) {
+			if (collision(monster, shipMissile)) {
 					    monster.hit = true;
 					    shipMissile.hit = true;
 					    break;
 					}
 		}
 	});
+	
+	// monster collide with ship
+	for(var i = monsterMissiles.length - 1; i >= 0; i--) {
+		var monsterMissile = monsterMissiles[i];
+	    
+		if (collision(monsterMissile, ship)) {
+					ship.hit = true;
+					monsterMissile.hit = true;
+				    GAME_OVER = true;
+				    break
+				}
+	}
+	
 	
 	// remove all monsters being hit
 	for(var i = monsters.length - 1; i >= 0; i--) {
@@ -197,6 +272,11 @@ function update() {
 }
 
 function draw() {
+	
+	monsterMissiles.forEach(function(monsterMissile) {
+		monsterMissile.draw();
+	});
+	
 	monsters.forEach(function(monster) {
 		monster.draw();
 	});
