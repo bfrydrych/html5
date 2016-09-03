@@ -79,6 +79,7 @@ class Monster extends GameObject {
 	}
 }
 
+
 class Ship extends GameObject {
 	constructor() {
 		super(shipImg);
@@ -133,6 +134,69 @@ var monsters = [];
 var monster = new Monster();
 monsters.push(monster);
 
+class MonstersShephard {
+	constructor() {
+		this.moveDown = true;
+		this.moveLeft = false;
+		this.moveRight = false;
+		
+		this.nextTurn = monster.height;
+		
+		this.turnLeft = function() {
+			this.moveDown = false;
+			this.moveLeft = true;
+			this.moveRight = false;
+		}
+		
+		this.turnRight = function() {
+			this.moveDown = false;
+			this.moveLeft = false;
+			this.moveRight = true;
+		}
+		
+		this.turnDown = function() {
+			this.moveDown = true;
+			this.moveLeft = false;
+			this.moveRight = false;
+		}
+		
+		this.move = function() {
+			if (this.moveDown) {
+				var monster = monsters[0];
+				if (monster.y >= this.nextTurn) {
+					this.nextTurn = monster.y + monster.height;
+					for(var i = monsters.length - 1; i >= 0; i--) {
+						var monster = monsters[i];
+						if (monster.x == 0) {
+							this.turnRight();
+							break;
+						}
+						if (monster.x + monster.width == CANVAS_WIDTH) {
+							this.turnLeft();
+							break;
+						}
+					}
+				}
+				return;
+			}
+			
+			for(var i = monsters.length - 1; i >= 0; i--) {
+				var monster = monsters[i];
+				if (monster.x == 0) {
+					this.turnDown();
+					break;
+				}
+				if (monster.x + monster.width == CANVAS_WIDTH) {
+					this.turnDown();
+					break;
+				}
+			}
+		}
+	}
+	
+}
+
+
 for (var i = 1; i < 40; i++) {
 	if (i % 10 === 0 || i % 20 === 0 || i % 30 === 0) {
 		var monster = new Monster();
@@ -176,7 +240,7 @@ function keyDownHandler(event)
 }
 
 
-
+var monsterShephard = new MonstersShephard();
 function update() {
 	CTX.clearRect(0, 0, 2000, 2000);
 	
@@ -189,9 +253,19 @@ function update() {
 		monsterMissiles.push(monserMissile);
 	}
 	
+	monsterShephard.move();
+	
 	// move monsters
 	monsters.forEach(function(monster) {
-		monster.y = monster.y + monster.speed;
+		if (monsterShephard.moveDown) {
+			monster.y = monster.y + monster.speed;
+		}
+		if (monsterShephard.moveLeft) {
+			monster.x = monster.x - monster.speed;
+		}
+		if (monsterShephard.moveRight) {
+			monster.x = monster.x + monster.speed;
+		}
 	});
 	
 	// remove all ship missiles being out of board
