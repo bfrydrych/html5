@@ -3,11 +3,12 @@ var c=document.getElementById(CANVAS);
 var CANVAS_WIDTH = c.width;
 var CANVAS_HEIGHT = c.height;
 var CTX=c.getContext("2d");
-var RES_PREFIX = 'file:///D:/devel/projects/html5/spaceInvaders/';
+var RES_PREFIX = '';
 var MAX_RETRIES = 1000000000;
 var TIME_PER_FRAME = 1000 / 30;
 var gameloop = 0;
 var GAME_OVER = false;
+var GAME_WON = false;
 
 function getRandomInt(min, max) {
 	return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -339,9 +340,9 @@ function update() {
 			}
 	});
 	
-	if (GAME_OVER) {
-		clearInterval(gameloop);
-		alert("Przegrales. HAHAHAHAHAHA!!!!!!!!!");
+	//detect all monster killed
+	if (monsters.length == 0) {
+		GAME_WON = true;
 	}
 }
 
@@ -360,6 +361,15 @@ function draw() {
 	shipMissiles.forEach(function(shipMissile) {
 		shipMissile.draw();
 	});
+	
+	if (GAME_OVER) {
+		clearInterval(gameloop);
+		alert("Przegrales. HAHAHAHAHAHA!!!!!!!!!");
+	}
+	if (GAME_WON) {
+		clearInterval(gameloop);
+		alert("Wygrales. Brawo!!!!!!!!!");
+	}
 }
 
 
