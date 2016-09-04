@@ -217,7 +217,8 @@ ship.y = CANVAS_HEIGHT - ship.height;
 var shipMissiles = [];
 var monsterMissiles = [];
 
-document.addEventListener("keydown",keyDownHandler, false);	
+document.addEventListener("keydown",keyDownHandler, false);
+document.addEventListener("keyup",keyUpHandler, false);	
 
 function keyDownHandler(event)
 {
@@ -225,25 +226,48 @@ function keyDownHandler(event)
 
 	if (keyPressed == "A")
 	{		
-		ship.x = ship.x - ship.speed;
+		ship.moveLeft = true;
+		ship.moveRight = false;
 	}
 	else if (keyPressed == "D")
 	{	
-		ship.x = ship.x + ship.speed;		
+		ship.moveLeft = false;
+		ship.moveRight = true;
 	}
 	else if (keyPressed == "W")
 	{
-		var shipMissile = new ShipMissile();
-		shipMissile.y = ship.y - shipMissile.height + 45 ;
-		shipMissile.x = (ship.x + ship.width / 2) - (shipMissile.width / 2)
-		shipMissiles.push(shipMissile);
+		ship.shot = true;
+
 	}
+}
+
+function keyUpHandler(event)
+{
+	ship.moveLeft = false;
+	ship.moveRight = false;
+	ship.shot = false;
 }
 
 
 var monsterShephard = new MonstersShephard();
 function update() {
 	CTX.clearRect(0, 0, 2000, 2000);
+	
+	// ship move
+	if (ship.moveLeft) {
+		ship.x = ship.x - ship.speed
+	}
+	if (ship.moveRight) {
+		ship.x = ship.x + ship.speed
+	}
+	
+	// ship shot
+	if (ship.shot) {
+		var shipMissile = new ShipMissile();
+		shipMissile.y = ship.y - shipMissile.height + 45 ;
+		shipMissile.x = (ship.x + ship.width / 2) - (shipMissile.width / 2)
+		shipMissiles.push(shipMissile);
+	}
 	
 	// monster shot
 	if (monsterShotIntervalMeasurer.elapsed()) {
