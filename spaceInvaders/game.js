@@ -214,9 +214,17 @@ function keyDownHandler(event)
 
 function keyUpHandler(event)
 {
-	ship.moveLeft = false;
-	ship.moveRight = false;
-	ship.shot = false;
+	var keyPressed = String.fromCharCode(event.keyCode);
+	if (keyPressed == "A" || keyPressed == "D")
+	{		
+		ship.moveLeft = false;
+		ship.moveRight = false;
+	}
+	else if (keyPressed == "W")
+	{
+		ship.shot = false;
+
+	}
 }
 
 
@@ -233,7 +241,7 @@ function update() {
 	}
 	
 	// ship shot
-	if (ship.shot) {
+	if (ship.shot && shipMissiles.length < 1) {
 		var shipMissile = new ShipMissile();
 		shipMissile.y = ship.y - shipMissile.height + 45 ;
 		shipMissile.x = (ship.x + ship.width / 2) - (shipMissile.width / 2)
