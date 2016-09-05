@@ -21,110 +21,84 @@ function collision(a, b) {
 			a.height + a.y > b.y);
 }
 
-class ImageLoader {
-	constructor() {
-		this.img = null;
-		this.loadImage = function(name) {
-			this.img = new Image();
-			this.img.ready = false;
-			this.img.onload  = function() {
-				this.ready = true;
-			};
-			this.img.src = RES_PREFIX + name;
-			return this.img;
-		}
-		
-		this.loadScaledImage = function(name, width, height) {
-			this.img = new Image();
-			this.img.width = width;
-			this.img.height = height;
-			this.img.ready = false;
-			this.img.onload  = function() {
-				this.ready = true;
-				this.width = width;
-				this.height = height;
-			};
-			this.img.src = RES_PREFIX + name;
-			return this.img;
-		}
+function ImageLoader() {
+	this.img = null;
+	this.loadImage = function(name) {
+		this.img = new Image();
+		this.img.ready = false;
+		this.img.onload  = function() {
+			this.ready = true;
+		};
+		this.img.src = RES_PREFIX + name;
+		return this.img;
 	}
 }
 
 var imgLoader = new ImageLoader();
-var monsterImg = imgLoader.loadScaledImage("monster.png");
-var shipImg = imgLoader.loadScaledImage("ship.jpg");
-var shipMissileImg = imgLoader.loadScaledImage("shipMissile.png");
-var monsterMissileImg = imgLoader.loadScaledImage("monsterMissile.png");
+var monsterImg = imgLoader.loadImage("monster.png");
+var shipImg = imgLoader.loadImage("ship.jpg");
+var shipMissileImg = imgLoader.loadImage("shipMissile.png");
+var monsterMissileImg = imgLoader.loadImage("monsterMissile.png");
 
-class GameObject {
-	constructor(img) {
-		this.view = img;
-		this.x = 0;
-		this.y = 0;
-		this.width = 0;
-		this.height = 0;
-		
-		this.draw = function() {
-			CTX.drawImage(this.view, this.x, this.y, this.width, this.height);
-		}
-	}
-}
-
-class Monster extends GameObject {
-	constructor() {
-		super(monsterImg);
-		
-		this.width = 92;
-		this.height = 92;
-		this.speed = 1;
+function GameObject(img) {
+	this.view = img;
+	this.x = 0;
+	this.y = 0;
+	this.width = 0;
+	this.height = 0;
+	
+	this.draw = function() {
+		CTX.drawImage(this.view, this.x, this.y, this.width, this.height);
 	}
 }
 
 
-class Ship extends GameObject {
-	constructor() {
-		super(shipImg);
-		
-		this.width = 92;
-		this.height = 92;
-		this.speed = 20;
-	}
-}
 
-class ShipMissile extends GameObject {
-	constructor() {
-		super(shipMissileImg);
-		
-		this.width = 32;
-		this.height = 32;
-		this.speed = 30;
-	}
+function Monster() {
+	GameObject.call(this, monsterImg);
+	this.width = 92;
+	this.height = 92;
+	this.speed = 1;
 }
+Monster.prototype = new GameObject();
 
-class MonsterMissile extends GameObject {
-	constructor() {
-		super(monsterMissileImg);
-		
-		this.width = 32;
-		this.height = 32;
-		this.speed = 15;
-	}
+
+function Ship() {
+	GameObject.call(this, shipImg);
+	this.width = 92;
+	this.height = 92;
+	this.speed = 20;
 }
+Ship.prototype = new GameObject();
 
-class TimeIntervalMeasurer {
-	constructor() {
-		this.interval = 2000;
-		this.lastElapsed = new Date().getTime();
+function ShipMissile() {
+	GameObject.call(this, shipMissileImg);
+	this.width = 32;
+	this.height = 32;
+	this.speed = 30;
+}
+ShipMissile.prototype = new GameObject();
+
+function MonsterMissile() {
+	GameObject.call(this, monsterMissileImg);
+	this.width = 32;
+	this.height = 32;
+	this.speed = 15;
+}
+MonsterMissile.prototype = new GameObject();
+
+function TimeIntervalMeasurer() {
+	this.interval = 2000;
+	this.lastElapsed = new Date().getTime();
+	
+	this.elapsed = function() {
+		var currentTime = new Date().getTime();
 		
-		this.elapsed = function() {
-			var currentTime = new Date().getTime();
-			
-			if((currentTime - this.lastElapsed) >= this.interval) {
-				this.lastElapsed = currentTime;
-				return true;
-			} else {
-				return false;
-			}
+		if((currentTime - this.lastElapsed) >= this.interval) {
+			this.lastElapsed = currentTime;
+			return true;
+		} else {
+			return false;
 		}
 	}
 }
@@ -135,8 +109,7 @@ var monsters = [];
 var monster = new Monster();
 monsters.push(monster);
 
-class MonstersShephard {
-	constructor() {
+function MonstersShephard() {
 		this.moveDown = true;
 		this.moveLeft = false;
 		this.moveRight = false;
@@ -194,8 +167,6 @@ class MonstersShephard {
 			}
 		}
 	}
-	
-}
 
 
 for (var i = 1; i < 40; i++) {
@@ -402,7 +373,7 @@ var preloader = setInterval(preloading, TIME_PER_FRAME);
 
 function preloading()
 {	
-	if (monsterImg.ready && shipImg.ready && shipMissileImg)
+	if (monsterImg.ready && shipImg.ready && shipMissileImg && monsterMissileImg)
 	{
 		clearInterval(preloader);
 		
