@@ -14,6 +14,7 @@ function getRandomInt(min, max) {
 	return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+// rectangles collision detection
 function collision(a, b) {
 	return (a.x < b.x + b.width &&
 			a.x + a.width > b.x &&
@@ -33,12 +34,6 @@ function ImageLoader() {
 		return this.img;
 	}
 }
-
-var imgLoader = new ImageLoader();
-var monsterImg = imgLoader.loadImage("monster.png");
-var shipImg = imgLoader.loadImage("ship.jpg");
-var shipMissileImg = imgLoader.loadImage("shipMissile.png");
-var monsterMissileImg = imgLoader.loadImage("monsterMissile.png");
 
 function GameObject(img) {
 	this.view = img;
@@ -102,6 +97,17 @@ function TimeIntervalMeasurer() {
 		}
 	}
 }
+
+// load resources
+var imgLoader = new ImageLoader();
+var monsterImg = imgLoader.loadImage("monster.png");
+var shipImg = imgLoader.loadImage("ship.jpg");
+var shipMissileImg = imgLoader.loadImage("shipMissile.png");
+var monsterMissileImg = imgLoader.loadImage("monsterMissile.png");
+var shipShotSound = new Sound();
+shipShotSound.load("shipShotSound.mp3");
+
+
 
 var monsterShotIntervalMeasurer = new TimeIntervalMeasurer();
 
@@ -246,6 +252,8 @@ function update() {
 		shipMissile.y = ship.y - shipMissile.height + 45 ;
 		shipMissile.x = (ship.x + ship.width / 2) - (shipMissile.width / 2)
 		shipMissiles.push(shipMissile);
+		
+		shipShotSound.play();
 	}
 	
 	// monster shot
@@ -381,7 +389,7 @@ var preloader = setInterval(preloading, TIME_PER_FRAME);
 
 function preloading()
 {	
-	if (monsterImg.ready && shipImg.ready && shipMissileImg && monsterMissileImg)
+	if (monsterImg.ready && shipImg.ready && shipMissileImg && monsterMissileImg && shipShotSound)
 	{
 		clearInterval(preloader);
 		
@@ -391,3 +399,51 @@ function preloading()
 		}, TIME_PER_FRAME);
 	}
 }
+
+
+
+// AUDIO API
+var audioContext;
+window.addEventListener('load', init, false);
+function init() {
+  try {
+    window.AudioContext = window.AudioContext||window.webkitAudioContext;
+    audioContext = new AudioContext();
+  }
+  catch(e) {
+    alert('Web Audio API is not supported in this browser');
+  }
+}
+
+function loadSound(url, onLoad) {
+	var request = new XMLHttpRequest();
+	request.open('GET', url, true);
+	request.responseType = 'arraybuffer';
+	
+	// Decode asynchronously
+	request.onload = function() {
+	 audioContext.decodeAudioData(request.response, onLoad, onError);
+	}
+	request.send();
+}
+
+
+function playSound(sound) {
+  var source = audioContext.createBufferSource(); // creates a sound source
+  source.buffer = sound;                    // tell the source which sound to play
+  source.connect(context.destination);       // connect the source to the context's destination (the speakers)
+  source.start(0);                           // play the source now
+}
+
+function Sound() {
+	this.ready = false;
+	this.buffer = null;
+	this.load = function (url) {
+		loadSound(url, function (buffer) {
+			this.ready = true;
+			this.buffer = buffer;
+		});
+	}
+	this.play = playSound;
+}
+
