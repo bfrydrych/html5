@@ -52,6 +52,7 @@ function GameObject(img) {
 function Monster() {
 	GameObject.call(this, monsterImg);
 	this.width = 92;
+	this.x = 1;
 	this.height = 92;
 	this.speed = 1;
 }
@@ -116,11 +117,12 @@ var monster = new Monster();
 monsters.push(monster);
 
 function MonstersShephard() {
-		this.moveDown = true;
+		this.moveDown = false;
 		this.moveLeft = false;
-		this.moveRight = false;
+		this.moveRight = true;
 		
 		this.nextTurn = monster.height;
+		this.distanceCovered = 0;
 		
 		this.turnLeft = function() {
 			this.moveDown = false;
@@ -143,8 +145,9 @@ function MonstersShephard() {
 		this.move = function() {
 			if (this.moveDown) {
 				var monster = monsters[0];
-				if (monster.y >= this.nextTurn) {
-					this.nextTurn = monster.y + monster.height;
+				this.distanceCovered = this.distanceCovered + monster.speed;
+				if (this.distanceCovered >= this.nextTurn) {
+					this.distanceCovered = 0;
 					for(var i = monsters.length - 1; i >= 0; i--) {
 						var monster = monsters[i];
 						if (monster.x == 0) {
