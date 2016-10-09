@@ -392,7 +392,7 @@ var preloader = setInterval(preloading, TIME_PER_FRAME);
 
 function preloading()
 {	
-	if (monsterImg.ready && shipImg.ready && shipMissileImg && monsterMissileImg && shipShotSound)
+	if (monsterImg.ready && shipImg.ready && shipMissileImg.ready && monsterMissileImg.ready && shipShotSound.ready)
 	{
 		clearInterval(preloader);
 		
@@ -418,7 +418,7 @@ function init() {
   }
 }
 
-function loadSound(url, onLoad) {
+function loadSound(url, onLoad, onError) {
 	var request = new XMLHttpRequest();
 	request.open('GET', url, true);
 	request.responseType = 'arraybuffer';
@@ -431,13 +431,6 @@ function loadSound(url, onLoad) {
 }
 
 
-function playSound(sound) {
-  var source = audioContext.createBufferSource(); // creates a sound source
-  source.buffer = sound;                    // tell the source which sound to play
-  source.connect(context.destination);       // connect the source to the context's destination (the speakers)
-  source.start(0);                           // play the source now
-}
-
 function Sound() {
 	this.ready = false;
 	this.buffer = null;
@@ -445,8 +438,13 @@ function Sound() {
 		loadSound(url, function (buffer) {
 			this.ready = true;
 			this.buffer = buffer;
-		});
+		}, function() {});
 	}
-	this.play = playSound;
+	this.play = function() {
+		var source = audioContext.createBufferSource(); // creates a sound source
+		source.buffer = this.buffer;                    // tell the source which sound to play
+		source.connect(context.destination);       // connect the source to the context's destination (the speakers)
+		source.start(0);                           // play the source now
+	};
 }
 
