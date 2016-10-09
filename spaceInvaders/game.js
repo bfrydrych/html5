@@ -99,6 +99,9 @@ function TimeIntervalMeasurer() {
 	}
 }
 
+// init audio system
+init();
+
 // load resources
 var imgLoader = new ImageLoader();
 var monsterImg = imgLoader.loadImage("monster.png");
@@ -256,6 +259,7 @@ function update() {
 		shipMissile.x = (ship.x + ship.width / 2) - (shipMissile.width / 2)
 		shipMissiles.push(shipMissile);
 		
+		shipShotSound.stop();
 		shipShotSound.play();
 	}
 	
@@ -407,7 +411,6 @@ function preloading()
 
 // AUDIO API
 var audioContext;
-window.addEventListener('load', init, false);
 function init() {
   try {
     window.AudioContext = window.AudioContext||window.webkitAudioContext;
@@ -418,33 +421,43 @@ function init() {
   }
 }
 
-function loadSound(url, onLoad, onError) {
-	var request = new XMLHttpRequest();
-	request.open('GET', url, true);
-	request.responseType = 'arraybuffer';
-	
-	// Decode asynchronously
-	request.onload = function() {
-	 audioContext.decodeAudioData(request.response, onLoad, onError);
-	}
-	request.send();
-}
-
 
 function Sound() {
 	this.ready = false;
 	this.buffer = null;
+	this.playedSource = null;
+	
 	this.load = function (url) {
-		loadSound(url, function (buffer) {
-			this.ready = true;
-			this.buffer = buffer;
-		}, function() {});
+		var thisSound = this;
+		var request = new XMLHttpRequest();
+		request.open('GET', url, true);
+		request.responseType = 'arraybuffer';
+		
+		// Decode asynchronously
+		request.onload = function() {
+			
+			 audioContext.decodeAudioData(request.response, function(buffer) {
+				 //on decode finish mark object as ready to play and keep audio buffer handy
+				 thisSound.ready = true;
+				 thisSound.buffer = buffer; 
+			 }, function () {
+				 //TODO: smart error handling
+			 });
+		}
+		request.send();
 	}
 	this.play = function() {
-		var source = audioContext.createBufferSource(); // creates a sound source
-		source.buffer = this.buffer;                    // tell the source which sound to play
-		source.connect(context.destination);       // connect the source to the context's destination (the speakers)
-		source.start(0);                           // play the source now
-	};
+		this.playedSource = audioContext.createBufferSource(); // creates a sound source
+		this.playedSource.buffer = this.buffer;                    // tell the source which sound to play
+		this.playedSource.connect(audioContext.destination);       // connect the source to the context's destination (the speakers)
+		this.playedSource.start(0);                           // play the source now
+	}
+	
+	this.stop = function() {
+		if (this.playedSource !== null) {
+			this.playedSource.stop();
+			this.playedSource = null;
+		}
+	}
 }
 
