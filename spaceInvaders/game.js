@@ -110,6 +110,8 @@ var shipMissileImg = imgLoader.loadImage("shipMissile.png");
 var monsterMissileImg = imgLoader.loadImage("monsterMissile.png");
 var shipShotSound = new Sound();
 shipShotSound.load("shipShotSound.mp3");
+var monsterShotSound = new Sound();
+monsterShotSound.load("monsterShotSound.mp3");
 
 
 
@@ -270,6 +272,9 @@ function update() {
 		monserMissile.y = monster.y - monserMissile.height + 45 ;
 		monserMissile.x = (monster.x + monster.width / 2) - (monserMissile.width / 2)
 		monsterMissiles.push(monserMissile);
+		
+		monsterShotSound.stop();
+		monsterShotSound.play();
 	}
 	
 	monsterShephard.move();
@@ -446,7 +451,7 @@ function Sound() {
 		}
 		request.send();
 	}
-	this.play = function() {
+	this.play = function(from) {
 		this.playedSource = audioContext.createBufferSource(); // creates a sound source
 		this.playedSource.buffer = this.buffer;                    // tell the source which sound to play
 		this.playedSource.connect(audioContext.destination);       // connect the source to the context's destination (the speakers)
