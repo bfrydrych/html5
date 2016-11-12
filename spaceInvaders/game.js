@@ -48,6 +48,13 @@ function GameObject(img) {
 }
 
 
+function Fortification() {
+	GameObject.call(this, fortificationImg);
+	this.width = 92;
+	this.x = 1;
+	this.height = 92;
+}
+Fortification.prototype = new GameObject();
 
 function Monster() {
 	GameObject.call(this, monsterImg);
@@ -102,12 +109,15 @@ function TimeIntervalMeasurer() {
 // init audio system
 init();
 
-// load resources
+// load images
 var imgLoader = new ImageLoader();
 var monsterImg = imgLoader.loadImage("monster.png");
 var shipImg = imgLoader.loadImage("ship.jpg");
 var shipMissileImg = imgLoader.loadImage("shipMissile.png");
 var monsterMissileImg = imgLoader.loadImage("monsterMissile.png");
+var fortificationImg = imgLoader.loadImage("fortification.jpg");
+
+// load sounds
 var shipShotSound = new Sound();
 shipShotSound.load("shipShotSound.mp3");
 var monsterShotSound = new Sound();
@@ -199,8 +209,16 @@ for (var i = 1; i < 40; i++) {
 var ship = new Ship();
 ship.y = CANVAS_HEIGHT - ship.height;
 
+
+var fortifications = [];
+function generateFortifiations(number, bottomY, upperY, maxX) {
+	var fortification = new Fortification();
+	fortifications.push(fortification);
+}
+
 var shipMissiles = [];
 var monsterMissiles = [];
+
 
 document.addEventListener("keydown",keyDownHandler, false);
 document.addEventListener("keyup",keyUpHandler, false);	
