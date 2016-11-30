@@ -21,6 +21,13 @@ function collision(a, b) {
 			a.y < b.y + b.height &&
 			a.height + a.y > b.y);
 }
+function collideWithAny(object, objects) {
+	return objects.some(function (element, index, array) {
+		return collision(object, element);
+	});
+}
+
+
 
 function ImageLoader() {
 	this.img = null;
@@ -205,16 +212,34 @@ for (var i = 1; i < 40; i++) {
 		monsters.push(monster);
 	}
 }
+monsters.rowNumber = 4;
 
 var ship = new Ship();
 ship.y = CANVAS_HEIGHT - ship.height;
 
 
 var fortifications = [];
-function generateFortifiations(number, bottomY, upperY, maxX) {
-	var fortification = new Fortification();
-	fortifications.push(fortification);
+function generateFortifiations(number, bottomY, upperY, maxX, shipHeight, monsterHeight) {
+	var FORTIFICATION_MARGIN = 10;
+	var floor = CANVAS_HEIGHT - shipHeight - FORTIFICATION_MARGIN;
+	var ceiling = monsters.rowNumber * monsterHeight + FORTIFICATION_MARGIN;
+	for(var i = number - 1; i >= 0; i--) {
+		var fortification = new Fortification();
+		var y = getRandomInt(floor, ceiling);
+		var x = getRandomInt(0, CANVAS_WIDTH - fortification.width);
+		fortification.y = y;
+		fortification.x = x;
+		while (collideWithAny(fortification, fortifications)) {
+			var fortification = new Fortification();
+			var y = getRandomInt(floor, ceiling);
+			var x = getRandomInt(0, CANVAS_WIDTH - fortification.width);
+			fortification.y = y;
+			fortification.x = x;
+		}
+	    fortifications.push(fortification);
+	}
 }
+
 
 var shipMissiles = [];
 var monsterMissiles = [];
@@ -440,6 +465,7 @@ function init() {
     audioContext = new AudioContext();
   }
   catch(e) {
+	//TODO: smart error handling
     alert('Web Audio API is not supported in this browser');
   }
 }
@@ -460,7 +486,7 @@ function Sound() {
 		request.onload = function() {
 			
 			 audioContext.decodeAudioData(request.response, function(buffer) {
-				 //on decode finish mark object as ready to play and keep audio buffer handy
+				 //on decode finish, mark object as ready to play and keep audio buffer handy
 				 thisSound.ready = true;
 				 thisSound.buffer = buffer; 
 			 }, function () {
