@@ -219,27 +219,28 @@ ship.y = CANVAS_HEIGHT - ship.height;
 
 
 var fortifications = [];
-function generateFortifiations(number, bottomY, upperY, maxX, shipHeight, monsterHeight) {
+function generateFortifiations(number, shipHeight, monsterHeight, monsters) {
+	var fort = new Fortification();
 	var FORTIFICATION_MARGIN = 10;
-	var floor = CANVAS_HEIGHT - shipHeight - FORTIFICATION_MARGIN;
-	var ceiling = monsters.rowNumber * monsterHeight + FORTIFICATION_MARGIN;
+	var floor = CANVAS_HEIGHT - shipHeight - FORTIFICATION_MARGIN - fort.height;
+	var ceiling = floor - ((floor - (monsters.rowNumber * monsterHeight + FORTIFICATION_MARGIN)) / 2);
 	for(var i = number - 1; i >= 0; i--) {
-		var fortification = new Fortification();
-		var y = getRandomInt(floor, ceiling);
-		var x = getRandomInt(0, CANVAS_WIDTH - fortification.width);
-		fortification.y = y;
-		fortification.x = x;
+		var fortification = newFortification(floor, ceiling);
 		while (collideWithAny(fortification, fortifications)) {
-			var fortification = new Fortification();
-			var y = getRandomInt(floor, ceiling);
-			var x = getRandomInt(0, CANVAS_WIDTH - fortification.width);
-			fortification.y = y;
-			fortification.x = x;
+			fortification = newFortification(floor, ceiling);
 		}
 	    fortifications.push(fortification);
 	}
 }
-
+function newFortification(floor, ceiling) {
+	var fortification = new Fortification();
+	var y = getRandomInt(ceiling, floor);
+	var x = getRandomInt(0, CANVAS_WIDTH - fortification.width);
+	fortification.y = y;
+	fortification.x = x;
+	return fortification;
+}
+generateFortifiations(5, ship.height, monster.height, monsters);
 
 var shipMissiles = [];
 var monsterMissiles = [];
@@ -426,6 +427,10 @@ function draw() {
 	
 	shipMissiles.forEach(function(shipMissile) {
 		shipMissile.draw();
+	});
+	
+	fortifications.forEach(function(fortification) {
+		fortification.draw();
 	});
 	
 	if (GAME_OVER) {
