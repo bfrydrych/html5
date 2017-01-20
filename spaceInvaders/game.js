@@ -60,6 +60,12 @@ function Fortification() {
 	this.width = 92;
 	this.x = 1;
 	this.height = 92;
+	this.stamina = 5;
+	
+	
+	this.destroy = function() {
+		
+	}
 }
 Fortification.prototype = new GameObject();
 
@@ -336,6 +342,16 @@ function update() {
 		}
 	});
 	
+	// remove destroyed fortifications
+	for(var i = fortifications.length - 1; i >= 0; --i) {
+		var fortification = fortifications[i];
+		// reset hit mark
+		fortification.hit = false;
+		if (fortification.destroyed) {
+			fortifications.splice(i, 1);
+		}
+	}
+	
 	// remove all ship missiles being out of board
 	for(var i = shipMissiles.length - 1; i >= 0; i--) {
 	    if(shipMissiles[i].y < 0) {
@@ -345,7 +361,7 @@ function update() {
 	
 	// remove all monsters missiles being out of board
 	for(var i = monsterMissiles.length - 1; i >= 0; i--) {
-	    if(monsterMissiles[i].y > CANVAS_HEIGHT) {
+	    if(monsterMissiles[i].y > CANVAS_HEIGHT || monsterMissiles[i].hit) {
 	    	monsterMissiles.splice(i, 1);
 	    }
 	}
@@ -373,6 +389,42 @@ function update() {
 		}
 	});
 	
+	// ship missile collide with fortification
+	shipMissiles.forEach(function(shipMissile) {
+		for(var i = fortifications.length - 1; i >= 0; i--) {
+			var fortification = fortifications[i];
+		    
+			if (collision(shipMissile, fortification)) {
+				
+				shipMissile.hit = true;
+				fortification.stamina--;
+				if (fortification.stamina <= 0) {
+					fortification.destroyed = true;
+				}
+			    fortification.hit = true;
+			    break;
+			}
+		}
+	});
+	
+	// monster missile collide with fortification
+	monsterMissiles.forEach(function(monsterMissile) {
+		for(var i = fortifications.length - 1; i >= 0; i--) {
+			var fortification = fortifications[i];
+		    
+			if (collision(monsterMissile, fortification)) {
+				
+				monsterMissile.hit = true;
+				fortification.stamina--;
+				if (fortification.stamina <= 0) {
+					fortification.destroyed = true;
+				}
+			    fortification.hit = true;
+			    break;
+			}
+		}
+	});
+	
 	// monster collide with ship
 	for(var i = monsterMissiles.length - 1; i >= 0; i--) {
 		var monsterMissile = monsterMissiles[i];
@@ -384,6 +436,8 @@ function update() {
 				    break
 				}
 	}
+	
+	
 	
 	
 	// remove all monsters being hit
@@ -399,6 +453,17 @@ function update() {
 	    	shipMissiles.splice(i, 1);
 	    }
 	}
+	
+	// monster collide with fortress
+	monsters.forEach(function(monster) {
+		for(var i = fortifications.length - 1; i >= 0; --i) {
+			var fortification = fortifications[i];
+			if(collision(fortification, monster)) {
+				fortification.destroyed = true;
+			}
+		}
+	});
+	
 	
 	// detect monster crossing border
 	monsters.forEach(function(monster) {

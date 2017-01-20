@@ -1,4 +1,7 @@
 - fortifications
+  - destroy animation
+  - destroy sound
+  - new sprites when hit
 
 - levels
  - the higher level the more fortifications
@@ -11,6 +14,8 @@
 - each completly destroyed fortification give 5 points
 - killed super monster give 10 points
 
+- hot seat
 
+- network multiplayer
 
 
