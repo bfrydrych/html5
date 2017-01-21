@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.2">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLUseCase</id>
+    <coordinates>
+      <x>510</x>
+      <y>530</y>
+      <w>120</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>browser player 1</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>520</x>
+      <y>300</y>
+      <w>160</w>
+      <h>250</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.
+send to ws:newgame</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;230.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLUseCase</id>
+    <coordinates>
+      <x>230</x>
+      <y>150</y>
+      <w>520</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>web socket server
+
+
+
+
+
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLUseCase</id>
+    <coordinates>
+      <x>300</x>
+      <y>530</y>
+      <w>120</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>browser player 2</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLUseCase</id>
+    <coordinates>
+      <x>470</x>
+      <y>250</y>
+      <w>180</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>queue ws:newgame
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLUseCase</id>
+    <coordinates>
+      <x>530</x>
+      <y>170</y>
+      <w>170</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>queue ws:game1
+keeps game state game1</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>550</x>
+      <y>210</y>
+      <w>190</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.
+creates new game queue</panel_attributes>
+    <additional_attributes>30.0;10.0;10.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>620</x>
+      <y>200</y>
+      <w>150</w>
+      <h>360</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.
+send to ws:game1
+event</panel_attributes>
+    <additional_attributes>37.0;17.0;10.0;340.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>300</x>
+      <y>200</y>
+      <w>250</w>
+      <h>360</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.
+send to ws:game1
+event</panel_attributes>
+    <additional_attributes>230.0;10.0;10.0;340.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>520</x>
+      <y>200</y>
+      <w>190</w>
+      <h>20</h>
+    </coordinates>
+    <panel_attributes>queue</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>380</x>
+      <y>190</y>
+      <w>100</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>topic ws:game1
+players update game state</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>420</x>
+      <y>170</y>
+      <w>180</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+once event processed send
+updated game state</panel_attributes>
+    <additional_attributes>60.0;30.0;110.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>300</x>
+      <y>210</y>
+      <w>190</w>
+      <h>340</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+updated game state</panel_attributes>
+    <additional_attributes>10.0;320.0;80.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>370</x>
+      <y>210</y>
+      <w>220</w>
+      <h>350</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+updated game state</panel_attributes>
+    <additional_attributes>150.0;330.0;10.0;10.0</additional_attributes>
+  </element>
+</diagram>
