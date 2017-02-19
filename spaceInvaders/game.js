@@ -557,6 +557,7 @@ function NoSoundFactory() {
 }
 
 function NoSound() {
+	this.ready = true;
 	this.load = function (url) {
 	}
 	this.play = function(from) {
