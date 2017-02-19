@@ -292,10 +292,25 @@ function keyUpHandler(event)
 }
 
 
+function ShipFortificationHitMeasurer() {
+	this.measurer = null;
+	this.isHit = false;
+	
+	this.hit = function() {
+		this.isHit = true;
+	}
+	
+	this.canShot = function() {
+		
+	}
+}
+
+var shipFortificationHitMeasurer = new ShipFortificationHitMeasurer();
 var monsterShephard = new MonstersShephard();
 function update() {
 	CTX.clearRect(0, 0, 2000, 2000);
 	
+	shipFortificationHitMeasurer.isHit = false;
 	// ship move
 	if (ship.moveLeft) {
 		ship.x = ship.x - ship.speed
@@ -395,7 +410,7 @@ function update() {
 			var fortification = fortifications[i];
 		    
 			if (collision(shipMissile, fortification)) {
-				
+				shipFortificationHitMeasurer.hit();
 				shipMissile.hit = true;
 				fortification.stamina--;
 				if (fortification.stamina <= 0) {
