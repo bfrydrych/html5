@@ -293,15 +293,21 @@ function keyUpHandler(event)
 
 
 function ShipFortificationHitMeasurer() {
-	this.measurer = null;
+	this.measurer = new TimeIntervalMeasurer();
+	this.measurer.interval = 700;
 	this.isHit = false;
 	
 	this.hit = function() {
-		this.isHit = true;
 	}
 	
 	this.canShot = function() {
-		
+		if (this.measurer == null) {
+			return true;
+		}
+		if (this.measurer !== null && this.measurer.elapsed()) {
+			return true;
+		}
+		return false;
 	}
 }
 
@@ -310,7 +316,6 @@ var monsterShephard = new MonstersShephard();
 function update() {
 	CTX.clearRect(0, 0, 2000, 2000);
 	
-	shipFortificationHitMeasurer.isHit = false;
 	// ship move
 	if (ship.moveLeft) {
 		ship.x = ship.x - ship.speed
@@ -320,7 +325,7 @@ function update() {
 	}
 	
 	// ship shot
-	if (ship.shot && shipMissiles.length < 1) {
+	if (ship.shot && shipFortificationHitMeasurer.canShot()) {
 		var shipMissile = new ShipMissile();
 		shipMissile.y = ship.y - shipMissile.height + 45 ;
 		shipMissile.x = (ship.x + ship.width / 2) - (shipMissile.width / 2)
