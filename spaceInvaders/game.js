@@ -119,9 +119,6 @@ function TimeIntervalMeasurer() {
 	}
 }
 
-// init audio system
-init();
-
 // load images
 var imgLoader = new ImageLoader();
 var monsterImg = imgLoader.loadImage("monster.png");
@@ -130,10 +127,13 @@ var shipMissileImg = imgLoader.loadImage("shipMissile.png");
 var monsterMissileImg = imgLoader.loadImage("monsterMissile.png");
 var fortificationImg = imgLoader.loadImage("fortification.jpg");
 
+//init audio system
+var soundFactory = init();
+
 // load sounds
-var shipShotSound = new Sound();
+var shipShotSound = soundFactory.createSound();
 shipShotSound.load("shipShotSound.mp3");
-var monsterShotSound = new Sound();
+var monsterShotSound = soundFactory.createSound();
 monsterShotSound.load("monsterShotSound.mp3");
 
 
@@ -533,13 +533,37 @@ function init() {
   try {
     window.AudioContext = window.AudioContext||window.webkitAudioContext;
     audioContext = new AudioContext();
+    return new WebAudioSoundFactory();
   }
   catch(e) {
 	//TODO: smart error handling
-    alert('Web Audio API is not supported in this browser');
+    //alert('Web Audio API is not supported in this browser. Sounds will not be played');
+    return new NoSoundFactory();
   }
 }
 
+
+
+function WebAudioSoundFactory() {
+	this.createSound = function() {
+		return new Sound();
+	}
+}
+
+function NoSoundFactory() {
+	this.createSound = function() {
+		return new NoSound();
+	}
+}
+
+function NoSound() {
+	this.load = function (url) {
+	}
+	this.play = function(from) {
+	}
+	this.stop = function() {
+	}
+}
 
 function Sound() {
 	this.ready = false;
