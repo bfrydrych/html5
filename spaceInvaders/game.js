@@ -1,3 +1,6 @@
+"use strict";
+
+var GAME_ENGINE = new GameEngine();
 var CANVAS = "game";
 var c=document.getElementById(CANVAS);
 var CANVAS_WIDTH = c.width;
@@ -7,26 +10,27 @@ var RES_PREFIX = '';
 var MAX_RETRIES = 1000000000;
 var TIME_PER_FRAME = 1000 / 30;
 var gameloop = 0;
-var GAME_OVER = false;
-var GAME_WON = false;
-
-function getRandomInt(min, max) {
-	return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-// rectangles collision detection
-function collision(a, b) {
-	return (a.x < b.x + b.width &&
-			a.x + a.width > b.x &&
-			a.y < b.y + b.height &&
-			a.height + a.y > b.y);
-}
-function collideWithAny(object, objects) {
-	return objects.some(function (element, index, array) {
-		return collision(object, element);
-	});
-}
-
+// var GAME_OVER = false; // TOSOURCE
+// var GAME_WON = false; // TOSOURCE
+//
+// TOSOURCE
+// function getRandomInt(min, max) {
+// 	return Math.floor(Math.random() * (max - min + 1)) + min;
+// }
+//
+// // rectangles collision detection
+// function collision(a, b) {
+// 	return (a.x < b.x + b.width &&
+// 			a.x + a.width > b.x &&
+// 			a.y < b.y + b.height &&
+// 			a.height + a.y > b.y);
+// }
+// function collideWithAny(object, objects) {
+// 	return objects.some(function (element, index, array) {
+// 		return collision(object, element);
+// 	});
+// }
+//-----
 
 
 function ImageLoader() {
@@ -42,21 +46,17 @@ function ImageLoader() {
 	}
 }
 
-function GameObject(img) {
+function PresentableGameObject(img) {
 	this.view = img;
-	this.x = 0;
-	this.y = 0;
-	this.width = 0;
-	this.height = 0;
-	
 	this.draw = function() {
 		CTX.drawImage(this.view, this.x, this.y, this.width, this.height);
 	}
 }
-
+PresentableGameObject.prototype = new GAME_ENGINE.GameObject();
+PresentableGameObject.prototype.constructor = PresentableGameObject;
 
 function Fortification() {
-	GameObject.call(this, fortificationImg);
+	PresentableGameObject.call(this, fortificationImg);
 	this.width = 92;
 	this.x = 1;
 	this.height = 92;
@@ -67,41 +67,41 @@ function Fortification() {
 		
 	}
 }
-Fortification.prototype = new GameObject();
+Fortification.prototype = new PresentableGameObject();
 
 function Monster() {
-	GameObject.call(this, monsterImg);
+	PresentableGameObject.call(this, monsterImg);
 	this.width = 92;
 	this.x = 1;
 	this.height = 92;
 	this.speed = 1;
 }
-Monster.prototype = new GameObject();
+Monster.prototype = new PresentableGameObject();
 
 
 function Ship() {
-	GameObject.call(this, shipImg);
+	PresentableGameObject.call(this, shipImg);
 	this.width = 92;
 	this.height = 92;
 	this.speed = 20;
 }
-Ship.prototype = new GameObject();
+Ship.prototype = new PresentableGameObject();
 
 function ShipMissile() {
-	GameObject.call(this, shipMissileImg);
+	PresentableGameObject.call(this, shipMissileImg);
 	this.width = 32;
 	this.height = 32;
 	this.speed = 30;
 }
-ShipMissile.prototype = new GameObject();
+ShipMissile.prototype = new PresentableGameObject();
 
 function MonsterMissile() {
-	GameObject.call(this, monsterMissileImg);
+	PresentableGameObject.call(this, monsterMissileImg);
 	this.width = 32;
 	this.height = 32;
 	this.speed = 15;
 }
-MonsterMissile.prototype = new GameObject();
+MonsterMissile.prototype = new PresentableGameObject();
 
 function TimeIntervalMeasurer() {
 	this.interval = 2000;
@@ -128,7 +128,7 @@ var monsterMissileImg = imgLoader.loadImage("monsterMissile.png");
 var fortificationImg = imgLoader.loadImage("fortification.jpg");
 
 //init audio system
-var soundFactory = init();
+var soundFactory = initAudio();
 
 // load sounds
 var shipShotSound = soundFactory.createSound();
@@ -232,7 +232,7 @@ function generateFortifiations(number, shipHeight, monsterHeight, monsters) {
 	var ceiling = floor - ((floor - (monsters.rowNumber * monsterHeight + FORTIFICATION_MARGIN)) / 2);
 	for(var i = number - 1; i >= 0; i--) {
 		var fortification = newFortification(floor, ceiling);
-		while (collideWithAny(fortification, fortifications)) {
+		while (GAME_ENGINE.collideWithAny(fortification, fortifications)) {
 			fortification = newFortification(floor, ceiling);
 		}
 	    fortifications.push(fortification);
@@ -240,8 +240,8 @@ function generateFortifiations(number, shipHeight, monsterHeight, monsters) {
 }
 function newFortification(floor, ceiling) {
 	var fortification = new Fortification();
-	var y = getRandomInt(ceiling, floor);
-	var x = getRandomInt(0, CANVAS_WIDTH - fortification.width);
+	var y = GAME_ENGINE.getRandomInt(ceiling, floor);
+	var x = GAME_ENGINE.getRandomInt(0, CANVAS_WIDTH - fortification.width);
 	fortification.y = y;
 	fortification.x = x;
 	return fortification;
@@ -337,7 +337,7 @@ function update() {
 	
 	// monster shot
 	if (monsterShotIntervalMeasurer.elapsed()) {
-		var monster = monsters[getRandomInt(0, monsters.length -1)];
+		var monster = monsters[GAME_ENGINE.getRandomInt(0, monsters.length -1)];
 		var monserMissile = new MonsterMissile();
 		monserMissile.y = monster.y - monserMissile.height + 45 ;
 		monserMissile.x = (monster.x + monster.width / 2) - (monserMissile.width / 2)
@@ -401,7 +401,7 @@ function update() {
 		for(var i = monsters.length - 1; i >= 0; i--) {
 			var monster = monsters[i];
 		    
-			if (collision(monster, shipMissile)) {
+			if (GAME_ENGINE.collision(monster, shipMissile)) {
 					    monster.hit = true;
 					    shipMissile.hit = true;
 					    break;
@@ -414,7 +414,7 @@ function update() {
 		for(var i = fortifications.length - 1; i >= 0; i--) {
 			var fortification = fortifications[i];
 		    
-			if (collision(shipMissile, fortification)) {
+			if (GAME_ENGINE.collision(shipMissile, fortification)) {
 				shipFortificationHitMeasurer.hit();
 				shipMissile.hit = true;
 				fortification.stamina--;
@@ -432,7 +432,7 @@ function update() {
 		for(var i = fortifications.length - 1; i >= 0; i--) {
 			var fortification = fortifications[i];
 		    
-			if (collision(monsterMissile, fortification)) {
+			if (GAME_ENGINE.collision(monsterMissile, fortification)) {
 				
 				monsterMissile.hit = true;
 				fortification.stamina--;
@@ -449,10 +449,10 @@ function update() {
 	for(var i = monsterMissiles.length - 1; i >= 0; i--) {
 		var monsterMissile = monsterMissiles[i];
 	    
-		if (collision(monsterMissile, ship)) {
+		if (GAME_ENGINE.collision(monsterMissile, ship)) {
 					ship.hit = true;
 					monsterMissile.hit = true;
-				    GAME_OVER = true;
+				    GAME_ENGINE.GAME_OVER = true;
 				    break
 				}
 	}
@@ -478,7 +478,7 @@ function update() {
 	monsters.forEach(function(monster) {
 		for(var i = fortifications.length - 1; i >= 0; --i) {
 			var fortification = fortifications[i];
-			if(collision(fortification, monster)) {
+			if(GAME_ENGINE.collision(fortification, monster)) {
 				fortification.destroyed = true;
 			}
 		}
@@ -488,13 +488,13 @@ function update() {
 	// detect monster crossing border
 	monsters.forEach(function(monster) {
 		if (monster.y + monster.width >= ship.y) {
-				    GAME_OVER = true;
+				    GAME_ENGINE.GAME_OVER = true;
 			}
 	});
 	
 	//detect all monster killed
 	if (monsters.length == 0) {
-		GAME_WON = true;
+		GAME_ENGINE.GAME_WON = true;
 	}
 }
 
@@ -518,11 +518,11 @@ function draw() {
 		fortification.draw();
 	});
 	
-	if (GAME_OVER) {
+	if (GAME_ENGINE.GAME_OVER) {
 		clearInterval(gameloop);
 		alert("Przegrales. HAHAHAHAHAHA!!!!!!!!!");
 	}
-	if (GAME_WON) {
+	if (GAME_ENGINE.GAME_WON) {
 		clearInterval(gameloop);
 		alert("Wygrales. Brawo!!!!!!!!!");
 	}
@@ -549,7 +549,7 @@ function preloading()
 
 // AUDIO API
 var audioContext;
-function init() {
+function initAudio() {
   try {
     window.AudioContext = window.AudioContext||window.webkitAudioContext;
     audioContext = new AudioContext();
@@ -579,11 +579,11 @@ function NoSoundFactory() {
 function NoSound() {
 	this.ready = true;
 	this.load = function (url) {
-	}
+	};
 	this.play = function(from) {
-	}
+	};
 	this.stop = function() {
-	}
+	};
 }
 
 function Sound() {

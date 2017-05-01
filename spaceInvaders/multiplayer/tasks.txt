@@ -1,0 +1,4 @@
+- allow single player to play from server
+    - create common to single and multi game engine - break down current game engine
+    - put multi game engine on nodejs
+    - create websocket client - server communication
