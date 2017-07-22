@@ -1,6 +1,7 @@
 "use strict";
 
 var GAME_ENGINE = new GameEngine();
+var COMMANDS = new COMMANDS();
 var CANVAS = "game";
 var c=document.getElementById(CANVAS);
 var CANVAS_WIDTH = c.width;
@@ -33,6 +34,7 @@ function PresentableGameObject(img, gameObject) {
 	this.y = gameObject.y;
 	this.width = gameObject.width;
 	this.height = gameObject.height;
+	this.speed = gameObject.speed; //TODO: to remove
 }
 function newMonster(monster) {
 	return new PresentableGameObject(monsterImg, monster)
@@ -87,11 +89,13 @@ monsterShotSound.load("monsterShotSound.mp3");
 
 var monsterShotIntervalMeasurer = new TimeIntervalMeasurer();
 
+// todo: move to commands
 var monsterMatrix = GAME_ENGINE.createMonstersMatrix();
 var monsters = [];
 monsters.rowNumber = monsterMatrix.rowNumber;
 monsterMatrix.forEach(function (monster) { monsters.push(newMonster(monster)) });
 
+//todo: move to commands
 var ship = newShip(GAME_ENGINE.createShip(CANVAS_HEIGHT));
 
 
@@ -179,208 +183,217 @@ function update() {
 
 	// TODO: move to commands
 	// ship shot
-	if (ship.shot && shipFortificationHitMeasurer.canShot()) {
-		var shipMissile = newShipMissile();
-		shipMissile.y = ship.y - shipMissile.height + 45 ;
-		shipMissile.x = (ship.x + ship.width / 2) - (shipMissile.width / 2)
-		shipMissiles.push(shipMissile);
-
-		shipShotSound.stop();
-		shipShotSound.play();
-	}
-
-	// monster shot
-	//TODO: move to commands
-	if (monsterShotIntervalMeasurer.elapsed()) {
-		var monster = monsters[GAME_ENGINE.getRandomInt(0, monsters.length -1)];
-		var monserMissile = newMonsterMissile();
-		monserMissile.y = monster.y - monserMissile.height + 45 ;
-		monserMissile.x = (monster.x + monster.width / 2) - (monserMissile.width / 2)
-		monsterMissiles.push(monserMissile);
-
-		monsterShotSound.stop();
-		monsterShotSound.play();
-	}
-
-	//TODO: move to commands
-	monsterShephard.move();
-
-	// move monsters
-	//TODO: move to commands
-	monsters.forEach(function(monster) {
-		if (monsterShephard.moveDown) {
-			monster.y = monster.y + monster.speed;
-		}
-		if (monsterShephard.moveLeft) {
-			monster.x = monster.x - monster.speed;
-		}
-		if (monsterShephard.moveRight) {
-			monster.x = monster.x + monster.speed;
-		}
-	});
-
-	// remove destroyed fortifications
-	// TODO: move to commands
-	for(var i = fortifications.length - 1; i >= 0; --i) {
-		var fortification = fortifications[i];
-		// reset hit mark
-		fortification.hit = false;
-		if (fortification.destroyed) {
-			fortifications.splice(i, 1);
-		}
-	}
-
-	// remove all ship missiles being out of board
-	// TODO: move to commands
-	for(var i = shipMissiles.length - 1; i >= 0; i--) {
-		if(shipMissiles[i].y < 0) {
-			shipMissiles.splice(i, 1);
-		}
-	}
-
-	// remove all monsters missiles being out of board
-	// TODO: move to commands
-	for(var i = monsterMissiles.length - 1; i >= 0; i--) {
-		if(monsterMissiles[i].y > CANVAS_HEIGHT || monsterMissiles[i].hit) {
-			monsterMissiles.splice(i, 1);
-		}
-	}
-
-	// move missiles
-	// TODO: move to commands
-	shipMissiles.forEach(function(shipMissile) {
-		shipMissile.y = shipMissile.y - shipMissile.speed;
-	});
-
-	monsterMissiles.forEach(function(monsterMissile) {
-		monsterMissile.y = monsterMissile.y + monsterMissile.speed;
-	});
-
-
-	// monster collide with missile
-	// TODO: move to commands
-	shipMissiles.forEach(function(shipMissile) {
-		for(var i = monsters.length - 1; i >= 0; i--) {
-			var monster = monsters[i];
-
-			if (GAME_ENGINE.collision(monster, shipMissile)) {
-				monster.hit = true;
-				shipMissile.hit = true;
-				break;
-			}
-		}
-	});
-
-	// ship missile collide with fortification
-	// TODO: move to commands
-	shipMissiles.forEach(function(shipMissile) {
-		for(var i = fortifications.length - 1; i >= 0; i--) {
-			var fortification = fortifications[i];
-
-			if (GAME_ENGINE.collision(shipMissile, fortification)) {
-				shipFortificationHitMeasurer.hit();
-				shipMissile.hit = true;
-				fortification.stamina--;
-				if (fortification.stamina <= 0) {
-					fortification.destroyed = true;
-				}
-				fortification.hit = true;
-				break;
-			}
-		}
-	});
-
-	// monster missile collide with fortification
-	// TODO: move to commands
-	monsterMissiles.forEach(function(monsterMissile) {
-		for(var i = fortifications.length - 1; i >= 0; i--) {
-			var fortification = fortifications[i];
-
-			if (GAME_ENGINE.collision(monsterMissile, fortification)) {
-
-				monsterMissile.hit = true;
-				fortification.stamina--;
-				if (fortification.stamina <= 0) {
-					fortification.destroyed = true;
-				}
-				fortification.hit = true;
-				break;
-			}
-		}
-	});
-
-	// monster collide with ship
-	for(var i = monsterMissiles.length - 1; i >= 0; i--) {
-		var monsterMissile = monsterMissiles[i];
-
-		if (GAME_ENGINE.collision(monsterMissile, ship)) {
-			ship.hit = true;
-			monsterMissile.hit = true;
-			GAME_ENGINE.GAME_OVER = true;
-			break
-		}
-	}
-
-
-
-
-	// remove all monsters being hit
-	for(var i = monsters.length - 1; i >= 0; i--) {
-		if(monsters[i].hit) {
-			monsters.splice(i, 1);
-		}
-	}
-
-	// remove all missiles hit the target
-	for(var i = shipMissiles.length - 1; i >= 0; i--) {
-		if(shipMissiles[i].hit) {
-			shipMissiles.splice(i, 1);
-		}
-	}
-
-	// monster collide with fortress
-	monsters.forEach(function(monster) {
-		for(var i = fortifications.length - 1; i >= 0; --i) {
-			var fortification = fortifications[i];
-			if(GAME_ENGINE.collision(fortification, monster)) {
-				fortification.destroyed = true;
-			}
-		}
-	});
-
-
-	// detect monster crossing border
-	monsters.forEach(function(monster) {
-		if (monster.y + monster.width >= ship.y) {
-			GAME_ENGINE.GAME_OVER = true;
-		}
-	});
-
-	//detect all monster killed
-	if (monsters.length == 0) {
-		GAME_ENGINE.GAME_WON = true;
-	}
+	// if (ship.shot && shipFortificationHitMeasurer.canShot()) {
+	// 	var shipMissile = newShipMissile();
+	// 	shipMissile.y = ship.y - shipMissile.height + 45 ;
+	// 	shipMissile.x = (ship.x + ship.width / 2) - (shipMissile.width / 2)
+	// 	shipMissiles.push(shipMissile);
+	//
+	// 	shipShotSound.stop();
+	// 	shipShotSound.play();
+	// }
+	//
+	// // monster shot
+	// //TODO: move to commands
+	// if (monsterShotIntervalMeasurer.elapsed()) {
+	// 	var monster = monsters[GAME_ENGINE.getRandomInt(0, monsters.length -1)];
+	// 	var monserMissile = newMonsterMissile();
+	// 	monserMissile.y = monster.y - monserMissile.height + 45 ;
+	// 	monserMissile.x = (monster.x + monster.width / 2) - (monserMissile.width / 2)
+	// 	monsterMissiles.push(monserMissile);
+	//
+	// 	monsterShotSound.stop();
+	// 	monsterShotSound.play();
+	// }
+	//
+	// //TODO: move to commands
+	// monsterShephard.move();
+	//
+	// // move monsters
+	// //TODO: move to commands
+	// monsters.forEach(function(monster) {
+	// 	if (monsterShephard.moveDown) {
+	// 		monster.y = monster.y + monster.speed;
+	// 	}
+	// 	if (monsterShephard.moveLeft) {
+	// 		monster.x = monster.x - monster.speed;
+	// 	}
+	// 	if (monsterShephard.moveRight) {
+	// 		monster.x = monster.x + monster.speed;
+	// 	}
+	// });
+	//
+	// // remove destroyed fortifications
+	// // TODO: move to commands
+	// for(var i = fortifications.length - 1; i >= 0; --i) {
+	// 	var fortification = fortifications[i];
+	// 	// reset hit mark
+	// 	fortification.hit = false;
+	// 	if (fortification.destroyed) {
+	// 		fortifications.splice(i, 1);
+	// 	}
+	// }
+	//
+	// // remove all ship missiles being out of board
+	// // TODO: move to commands
+	// for(var i = shipMissiles.length - 1; i >= 0; i--) {
+	// 	if(shipMissiles[i].y < 0) {
+	// 		shipMissiles.splice(i, 1);
+	// 	}
+	// }
+	//
+	// // remove all monsters missiles being out of board
+	// // TODO: move to commands
+	// for(var i = monsterMissiles.length - 1; i >= 0; i--) {
+	// 	if(monsterMissiles[i].y > CANVAS_HEIGHT || monsterMissiles[i].hit) {
+	// 		monsterMissiles.splice(i, 1);
+	// 	}
+	// }
+	//
+	// // move missiles
+	// // TODO: move to commands
+	// shipMissiles.forEach(function(shipMissile) {
+	// 	shipMissile.y = shipMissile.y - shipMissile.speed;
+	// });
+	//
+	// monsterMissiles.forEach(function(monsterMissile) {
+	// 	monsterMissile.y = monsterMissile.y + monsterMissile.speed;
+	// });
+	//
+	//
+	// // monster collide with missile
+	// // TODO: move to commands
+	// shipMissiles.forEach(function(shipMissile) {
+	// 	for(var i = monsters.length - 1; i >= 0; i--) {
+	// 		var monster = monsters[i];
+	//
+	// 		if (GAME_ENGINE.collision(monster, shipMissile)) {
+	// 			monster.hit = true;
+	// 			shipMissile.hit = true;
+	// 			break;
+	// 		}
+	// 	}
+	// });
+	//
+	// // ship missile collide with fortification
+	// // TODO: move to commands
+	// shipMissiles.forEach(function(shipMissile) {
+	// 	for(var i = fortifications.length - 1; i >= 0; i--) {
+	// 		var fortification = fortifications[i];
+	//
+	// 		if (GAME_ENGINE.collision(shipMissile, fortification)) {
+	// 			shipFortificationHitMeasurer.hit();
+	// 			shipMissile.hit = true;
+	// 			fortification.stamina--;
+	// 			if (fortification.stamina <= 0) {
+	// 				fortification.destroyed = true;
+	// 			}
+	// 			fortification.hit = true;
+	// 			break;
+	// 		}
+	// 	}
+	// });
+	//
+	// // monster missile collide with fortification
+	// // TODO: move to commands
+	// monsterMissiles.forEach(function(monsterMissile) {
+	// 	for(var i = fortifications.length - 1; i >= 0; i--) {
+	// 		var fortification = fortifications[i];
+	//
+	// 		if (GAME_ENGINE.collision(monsterMissile, fortification)) {
+	//
+	// 			monsterMissile.hit = true;
+	// 			fortification.stamina--;
+	// 			if (fortification.stamina <= 0) {
+	// 				fortification.destroyed = true;
+	// 			}
+	// 			fortification.hit = true;
+	// 			break;
+	// 		}
+	// 	}
+	// });
+	//
+	// // monster collide with ship
+	// for(var i = monsterMissiles.length - 1; i >= 0; i--) {
+	// 	var monsterMissile = monsterMissiles[i];
+	//
+	// 	if (GAME_ENGINE.collision(monsterMissile, ship)) {
+	// 		ship.hit = true;
+	// 		monsterMissile.hit = true;
+	// 		GAME_ENGINE.GAME_OVER = true;
+	// 		break
+	// 	}
+	// }
+	//
+	//
+	//
+	//
+	// // remove all monsters being hit
+	// for(var i = monsters.length - 1; i >= 0; i--) {
+	// 	if(monsters[i].hit) {
+	// 		monsters.splice(i, 1);
+	// 	}
+	// }
+	//
+	// // remove all missiles hit the target
+	// for(var i = shipMissiles.length - 1; i >= 0; i--) {
+	// 	if(shipMissiles[i].hit) {
+	// 		shipMissiles.splice(i, 1);
+	// 	}
+	// }
+	//
+	// // monster collide with fortress
+	// monsters.forEach(function(monster) {
+	// 	for(var i = fortifications.length - 1; i >= 0; --i) {
+	// 		var fortification = fortifications[i];
+	// 		if(GAME_ENGINE.collision(fortification, monster)) {
+	// 			fortification.destroyed = true;
+	// 		}
+	// 	}
+	// });
+	//
+	//
+	// // detect monster crossing border
+	// monsters.forEach(function(monster) {
+	// 	if (monster.y + monster.width >= ship.y) {
+	// 		GAME_ENGINE.GAME_OVER = true;
+	// 	}
+	// });
+	//
+	// //detect all monster killed
+	// if (monsters.length == 0) {
+	// 	GAME_ENGINE.GAME_WON = true;
+	// }
 }
+
+const ws = new WebSocket('ws://localhost:8080');
+ws.onmessage = function incoming(data) {
+	console.log(data);
+};
+
+ws.onopen = function() {
+	ws.send('something');
+};
 
 function draw() {
 
-	monsterMissiles.forEach(function(monsterMissile) {
-		monsterMissile.draw();
-	});
-
-	monsters.forEach(function(monster) {
-		monster.draw();
-	});
+	// monsterMissiles.forEach(function(monsterMissile) {
+	// 	monsterMissile.draw();
+	// });
+	//
+	// monsters.forEach(function(monster) {
+	// 	monster.draw();
+	// });
 
 	ship.draw();
 
-	shipMissiles.forEach(function(shipMissile) {
-		shipMissile.draw();
-	});
-
-	fortifications.forEach(function(fortification) {
-		fortification.draw();
-	});
+	// shipMissiles.forEach(function(shipMissile) {
+	// 	shipMissile.draw();
+	// });
+	//
+	// fortifications.forEach(function(fortification) {
+	// 	fortification.draw();
+	// });
 
 	if (GAME_ENGINE.GAME_OVER) {
 		clearInterval(gameloop);

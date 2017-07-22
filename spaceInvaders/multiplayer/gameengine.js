@@ -4,6 +4,9 @@ function GameEngine() {
 	this.GAME_OVER = false;
 	this.GAME_WON = false;
 
+	this.gameObjects = new Map();
+	this.ships = [];
+
 	this.getRandomInt = function(min, max) {
 		return Math.floor(Math.random() * (max - min + 1)) + min;
 	};
@@ -55,6 +58,14 @@ function GameEngine() {
 		this.width = 92;
 		this.height = 92;
 		this.speed = 20;
+
+		this.moveLeft = function() {
+			this.x = this.x - this.speed;
+		};
+
+		this.moveRight = function() {
+			this.x = this.x + this.speed
+		};
 	};
 	this.Ship.prototype = new this.GameObject();
 
