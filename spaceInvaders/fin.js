@@ -367,11 +367,11 @@
 //
 // 	if (GAME_OVER) {
 // 		clearInterval(gameloop);
-// 		alert("Przegrales. HAHAHAHAHAHA!!!!!!!!!");
+// 		alert("You lost. HAHAHAHAHAHA!!!!!!!!!");
 // 	}
 // 	if (GAME_WON) {
 // 		clearInterval(gameloop);
-// 		alert("Wygrales. Brawo!!!!!!!!!");
+// 		alert("You won. Bravo!!!!!!!!!");
 // 	}
 // }
 //
