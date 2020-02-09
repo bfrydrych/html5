@@ -1,0 +1,5 @@
+syntax = "proto2";
+
+message NewShip {
+    optional string canvas = 1;
+}

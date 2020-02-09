@@ -2,3 +2,10 @@
     - create common to single and multi game engine - break down current game engine
     - put multi game engine on nodejs
     - create websocket client - server communication
+
+- create a new game
+
+- move ship creation on server side
+    - establish connection to server
+    - send join message to server
+    - server send a ship to client
