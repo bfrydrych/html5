@@ -2,6 +2,6 @@ install nodejs
 npm install -g http-server
 http-server -c-1
 
-http://toiletinvaders.000webhostapp.com/game.html
+http://minionsinvasion.000webhostapp.com/game.html
 
 https://github.com/websockets/ws
